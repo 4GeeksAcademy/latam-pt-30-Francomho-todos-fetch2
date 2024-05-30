@@ -3,7 +3,7 @@ import PropTypes from "prop-types"
 import "../../styles/index.css"
 
 export const Task = () => {
-    const [inputValue, setImputValue] = useState("");
+    const [inputValue, setInputValue] = useState("");
     const [allTasks, setAllTasks] = useState([]);
 
     const removeTask = (id) => {
@@ -14,13 +14,13 @@ export const Task = () => {
         try {
             const response = await fetch("https://playground.4geeks.com/todo/users/franco_mho", 
                 { method: "POST" }
-            )
+            );
             if (!response.ok) {
                 console.log("Error en la solicitud: ", response)
-                return null
+                return;
             }
-            const data = await response.json()
-            console.log(data)
+            const data = await response.json();
+            console.log(data);
         } catch (error) {
             console.log("Error al obtener tareas: ", error);
         }
@@ -30,9 +30,10 @@ export const Task = () => {
 
     const getTasks = async () => {
         try {
-            const response = await fetch("https://playground.4geeks.com/todo/users/franco_mho")
+            const response = await fetch("https://playground.4geeks.com/todo/users/franco_mho");
             if (!response.ok) {
                 console.log("Error en la solicitud: ", response)
+                return;
             }
             const data = await response.json()
             setAllTasks(data.todos)
@@ -45,8 +46,7 @@ export const Task = () => {
 
     const addTask = async () => {
         try {
-            const response = await fetch("https://playground.4geeks.com/todo/todos/franco_mho",
-                {
+            const response = await fetch("https://playground.4geeks.com/todo/todos/franco_mho",{
                     method: "POST", 
                     headers: {
                         "Content-Type": "application/json"
@@ -55,15 +55,14 @@ export const Task = () => {
                         label: inputValue,
                         is_done: false
                     })
-                }
-            )
+                });
             if (!response.ok) {
-                console.log("Error en la solicitud: ", response)
-                return null;
+                console.log("Error en la solicitud: ", response);
+                return;
             }
-            const data = await response.json()
+            const data = await response.json();
             setAllTasks([...allTasks, data]);
-            setImputValue("");
+            setInputValue("");
 
         } catch (error) {
             console.log("Error al obtener tareas: ", error);
@@ -73,27 +72,47 @@ export const Task = () => {
     
     const deleteTask = async (id) => {
         try{
-            const response = await fetch("https://playground.4geeks.com/todo/todos/" + id,
-            {method: "DELETE"})
+            const response = await fetch("https://playground.4geeks.com/todo/todos/" + id,{
+                method: "DELETE"
+            });
 
             if (!response.ok) {
-                console.log("Error en la solicitud: ", response)
-                return null;
+                console.log("Error en la solicitud: ", response);
+                return;
             }  
             const data = await response
-            console.log(data)
-            removeTask(id)
+            console.log(data);
+            removeTask(id);
         
     } catch (error) {
         console.log("Error al obtener tareas: ", error);
     }
 };
 
-
     useEffect(() => {
         createUser()
         getTasks()
     }, []);
+
+    const deleteAllTasks = async () => {
+        try{
+            const response = await fetch("https://playground.4geeks.com/todo/users/franco_mho",{
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+            if (!response.ok) {
+                console.log("Error en la solicitud: ", response);
+                return;
+            }
+            setAllTasks([]);
+            createUser()
+        } catch (error){
+            console.log("Error al eliminar todas las tareas: ", error);
+        }
+    };
+
 
     return (
         <div className="mb-3">
@@ -102,11 +121,11 @@ export const Task = () => {
                 id="singleTask"
                 placeholder="Add your Task"
                 onChange={(event) => {
-                    setImputValue(event.target.value)
+                    setInputValue(event.target.value)
                 }}
                 onKeyDown={(event) => {
                     if (event.key == "Enter") {
-                        addTask()
+                        addTask();
                     }
                 }}
 
@@ -115,7 +134,12 @@ export const Task = () => {
             <ul className="list-group" data-bs-theme="dark">
                 {allTasks && allTasks.length > 0 && allTasks.map((task) => {
                     return (
-                        <li key={task.id} className="list-group-item d-flex justify-content-between align-items-center">
+                        <li key={task.id} 
+                            className="list-group-item 
+                                d-flex 
+                                justify-content-between 
+                                align-items-center"
+                        >
                             {task.label}
                             <button
                                 className="btn btn-danger btn-sm visible"
@@ -136,6 +160,9 @@ export const Task = () => {
                 <div className="d-flex justify-content-center">
                     {allTasks.length} tasks left</div>
             </div>
+            <button 
+            onClick={deleteAllTasks} 
+            className="btn btn-danger btn-sm mt-3">Reset tasks</button>
             
         </div>
     )
