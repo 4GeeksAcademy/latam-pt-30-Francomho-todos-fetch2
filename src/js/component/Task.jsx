@@ -10,6 +10,7 @@ export const Task = () => {
         const newTasks = allTasks.filter(item => item.id != id);
         setAllTasks(newTasks);
     };
+
     const createUser = async () => {
         try {
             const response = await fetch("https://playground.4geeks.com/todo/users/franco_mho", 
@@ -37,35 +38,60 @@ export const Task = () => {
             }
             const data = await response.json()
             setAllTasks(data.todos)
-
         }
         catch (error) {
             console.log("Error al obtener tareas: ", error);
         }
     };
 
+    // const addTask = async () => {
+    //     try {
+    //         const response = await fetch("https://playground.4geeks.com/todo/todos/franco_mho",{
+    //                 method: "POST", 
+    //                 headers: {
+    //                     "Content-Type": "application/json"
+    //                 },
+    //                 body: JSON.stringify({
+    //                     label: inputValue,
+    //                     is_done: false
+    //                 })
+    //             });
+    //         if (!response.ok) {
+    //             console.log("Error en la solicitud: ", response);
+    //             return;
+    //         }
+    //         const data = await response.json();
+
+    //         // Solo actualizamos el estado si el servidor confirma que la tarea fue agregada
+    //         setAllTasks([...allTasks, data]);
+    //         setInputValue("");
+    //         console.log(data);
+
+    //     } catch (error) {
+    //         console.log("Error al obtener tareas: ", error);
+    //     }
+    // };
     const addTask = async () => {
         try {
-            const response = await fetch("https://playground.4geeks.com/todo/todos/franco_mho",{
-                    method: "POST", 
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        label: inputValue,
-                        is_done: false
-                    })
-                });
-            if (!response.ok) {
-                console.log("Error en la solicitud: ", response);
-                return;
+            const response = await fetch("https://playground.4geeks.com/todo/todos/franco_mho", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    label: inputValue,
+                    is_done: false
+                })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setAllTasks([...allTasks, data]); // Actualizamos el estado solo si la respuesta es exitosa
+                setInputValue(""); // Limpiamos el input solo si la tarea fue agregada
+            } else {
+                console.log("Error al agregar tarea: ", response);
             }
-            const data = await response.json();
-            setAllTasks([...allTasks, data]);
-            setInputValue("");
-
         } catch (error) {
-            console.log("Error al obtener tareas: ", error);
+            console.log("Error al agregar tarea: ", error);
         }
     };
     
@@ -76,44 +102,58 @@ export const Task = () => {
                 method: "DELETE"
             });
 
-            if (!response.ok) {
-                console.log("Error en la solicitud: ", response);
-                return;
-            }  
-            const data = await response
-            console.log(data);
-            removeTask(id);
+            // if (!response.ok) {
+            //     console.log("Error en la solicitud: ", response);
+            //     return;
+            // }  
+            // // const data = await response
+            // // console.log(data);
+            // // Solo eliminamos la tarea localmente si el servidor confirma que la tarea fue eliminada
+
+            // removeTask(id);
+
+            if (response.ok) {
+                removeTask(id); // Eliminamos la tarea localmente solo si el servidor la eliminó
+            } else {
+                console.log("Error al eliminar tarea: ", response);
+            }
         
     } catch (error) {
         console.log("Error al obtener tareas: ", error);
     }
 };
 
-    useEffect(() => {
-        createUser()
-        getTasks()
-    }, []);
 
-    const deleteAllTasks = async () => {
-        try{
-            const response = await fetch("https://playground.4geeks.com/todo/users/franco_mho",{
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            });
-            if (!response.ok) {
-                console.log("Error en la solicitud: ", response);
-                return;
+const deleteAllTasks = async () => {
+    try{
+        const response = await fetch("https://playground.4geeks.com/todo/users/franco_mho",{
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
             }
-            setAllTasks([]);
-            createUser()
+        });
+        // if (!response.ok) {
+            //     console.log("Error en la solicitud: ", response);
+            //     return;
+            // }
+            // setAllTasks([]);
+            // createUser()
+            if (response.ok) {
+                setAllTasks([]); // Borramos todas las tareas localmente solo si el servidor las eliminó
+                createUser();
+            } else {
+                console.log("Error al eliminar todas las tareas: ", response);
+            }
         } catch (error){
             console.log("Error al eliminar todas las tareas: ", error);
         }
     };
-
-
+    
+    useEffect(() => {
+        createUser()
+        getTasks()
+    }, []);
+    
     return (
         <div className="mb-3">
             <input type="text"
